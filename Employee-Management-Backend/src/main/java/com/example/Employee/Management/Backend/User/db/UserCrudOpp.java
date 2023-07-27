@@ -14,7 +14,7 @@ public class UserCrudOpp {
     private DbConnection dbConnection;
 
     public void insertData(int id, String name, String gender, String userName, String password) throws SQLException, IOException {
-        String query = "insert into user_data(id,name,gender,user_name,password) \n" + "values(?,?,?,?,?)";
+        String query = "insert into user_data(id,name,gender,user_name,password) \n" + "value(?,?,?,?,?)";
         Connection con= dbConnection.getConnection();
         PreparedStatement statement = con.prepareStatement(query);
 
