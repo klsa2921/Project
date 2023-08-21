@@ -1,9 +1,11 @@
 package com.example.Employee.Management.Backend.User.controller;
 
 import com.example.Employee.Management.Backend.User.db.UserCrudOpp;
+import com.example.Employee.Management.Backend.User.model.User;
 import com.example.Employee.Management.Backend.User.model.UserDb;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -32,10 +34,11 @@ public class UserController {
             userDb.setPassword((String) data.get("password"));
             userCrudOpp.insertData(userDb.getId(), userDb.getName(), userDb.getGender(), userDb.getUserName(), userDb.getPassword());
             return ResponseEntity.ok("User data added successfully");
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | NullPointerException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     @GetMapping("/getAllUsers")
     public ResponseEntity<List<Map<String,Object>>> getAllUser(){
@@ -47,8 +50,7 @@ public class UserController {
                 user.put("id",rs.getInt("id"));
                 user.put("name",rs.getString("name"));
                 user.put("gender",rs.getString("gender"));
-                user.put("user_name",rs.getString("user_name"));
-                user.put("password",rs.getString("password"));
+                user.put("role_name",rs.getInt("role_name"));
                 usersList.add(user);
             }
             return ResponseEntity.ok(usersList);
@@ -56,10 +58,10 @@ public class UserController {
             throw new RuntimeException(e);
         }
     }
-    @PutMapping("/assignRole/{id}/{role_name}")
-    public ResponseEntity<String> assignRoleToUser(@PathVariable(name = "id") int id,@PathVariable(name = "role_name") String role_name){
+    @PutMapping("/assignRole/{id}")
+    public ResponseEntity<String> assignRoleToUser(@PathVariable(name = "id") int id,@RequestBody Map<String,Object> user){
         try{
-            int numberOfUsersUpdate= userCrudOpp.assignRoleById(id,role_name);
+            int numberOfUsersUpdate= userCrudOpp.assignRoleById(id, (String) user.get("role_name"));
             if(numberOfUsersUpdate==1)
                 return ResponseEntity.ok("Assigned role successfully...........");
             else
@@ -77,6 +79,25 @@ public class UserController {
                 return ResponseEntity.ok("User deleted successfully...........");
             else
                 return ResponseEntity.ok("No user found by id");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/findUserByUserName/{username}")
+    public ResponseEntity<Map<String,Object>> getUserByUserName(@PathVariable("username") String userName){
+        try{
+            Map<String,Object> user=new HashMap<>();
+            ResultSet rs=userCrudOpp.getUserByUserName(userName);
+            while (rs.next()){
+                user.put("id",rs.getInt("id"));
+                user.put("name",rs.getInt("name"));
+                user.put("gender",rs.getInt("gender"));
+                user.put("username",rs.getInt("username"));
+                user.put("password",rs.getInt("password"));
+                user.put("role_name",rs.getInt("role_name"));
+            }
+            return  ResponseEntity.ok(user);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
